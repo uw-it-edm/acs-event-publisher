@@ -1,0 +1,40 @@
+.gradle
+/build/
+!gradle/wrapper/gradle-wrapper.jar
+application.pid
+target/
+out/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+*.iws
+
+### NetBeans ###
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+### ACS ###
+alf_data_dev/
+solr.log*
+alfresco.log*
+share.log*
+
+### LICENCE ###
+*lic.installed
+*lic
