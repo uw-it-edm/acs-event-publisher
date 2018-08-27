@@ -4,7 +4,9 @@
 * symlink the content-model repo to `./src/test/resources/alfresco/extensions`
 `ln -s /path/to/acs-content-models/* ./src/test/resources/alfresco/extension/`
 
-
+# Run in IntelliJ
+* add a new maven project, command should be `clean install alfresco:run`
+* Go to the `Runner` tab, override the alfresco/module/acs-event-publisher/alfresco-global.properties with the values you want to use  
 
 
 
