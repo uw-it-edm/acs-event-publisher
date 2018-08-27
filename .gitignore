@@ -34,7 +34,6 @@ alf_data_dev/
 solr.log*
 alfresco.log*
 share.log*
-src/main/resources/alfresco/module/acs-event-publisher/alfresco-global.properties
 
 ### LICENCE ###
 *lic.installed
