@@ -10,6 +10,18 @@ cache:
 before_install:
   - cp .travis/mvn_settings.xml $HOME/.m2/settings.xml
 
+jobs:
+  include:
+    - stage: GitHub Release
+      script: mvn clean package
+      deploy:
+        provider: releases
+        api_key: $GITHUB_OAUTH_TOKEN
+        file_glob: true
+        file: target/acs-event-publisher-*.amp
+        skip_cleanup: true
+        on:
+          tags: true
 notifications:
   email: false
   slack:

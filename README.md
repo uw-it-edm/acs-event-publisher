@@ -1,3 +1,18 @@
+
+#  Configure access to Alfresco Private Repository
+  * Create a maven master password, then encrypt the artifacts.alfresco.com password : https://maven.apache.org/guides/mini/guide-encryption.html
+  * Add the repository in your .m2/settings.xml following this : https://docs.alfresco.com/4.2/tasks/dev-extensions-maven-sdk-tutorials-configure-maven-enterprise.html
+
+
+
+
+
+
+
+#Alfresco SDK does not support Alfresco 6.X, the directions below are out of date
+
+---
+
 # SetUp
 
 * copy the license file from one of our server `scp $(ec2GetForEnvAndType dev acs-repo | jq -r '.[0].privateIp'):/usr/share/tomcat/shared/classes/alfresco/extension/license/*.lic* ./src/test/license/licence.lic`
@@ -43,5 +58,3 @@ To run use `mvn clean install -DskipTests=true alfresco:run` or `./run.sh` and v
   * Purge, 
   * Functional/remote unit tests
    
-  
- 
