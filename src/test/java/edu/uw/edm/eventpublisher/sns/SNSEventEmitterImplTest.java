@@ -8,7 +8,6 @@ import com.amazonaws.services.sns.model.PublishResult;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Matchers;
 
 import java.util.UUID;
 
@@ -19,9 +18,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -40,12 +38,12 @@ public class SNSEventEmitterImplTest {
 
     @Before
     public void setUp() {
-         amazonSnsMock = mock(AmazonSNS.class);
+        amazonSnsMock = mock(AmazonSNS.class);
 
-         snsClientFactoryMock = mock(SNSClientFactory.class);
+        snsClientFactoryMock = mock(SNSClientFactory.class);
         when(snsClientFactoryMock.getSNSClient()).thenReturn(amazonSnsMock);
 
-        snsEventEmitter = new SNSEventEmitterImpl(snsClientFactoryMock, SNS_TOPIC_ARN);
+        snsEventEmitter = new SNSEventEmitterImpl(snsClientFactoryMock, SNS_TOPIC_ARN, false);
     }
 
     @Test
@@ -96,6 +94,23 @@ public class SNSEventEmitterImplTest {
 
         assertThat(capturePublishRequest.getMessageAttributes().get("profile").getStringValue(), is(equalTo("my-profile")));
         assertThat(capturePublishRequest.getMessageAttributes().get("event-type").getStringValue(), is(equalTo("create")));
+    }
+
+    @Test
+    public void snsClientIsntCalledWhenNoopTest() {
+
+        snsEventEmitter = new SNSEventEmitterImpl(snsClientFactoryMock, SNS_TOPIC_ARN, true);
+
+        PublishResult mockPublishResult = new PublishResult().withMessageId(UUID.randomUUID().toString());
+
+        when(amazonSnsMock.publish(any(PublishRequest.class))).thenReturn(mockPublishResult);
+
+        DocumentChangedEvent documentChangedEvent =
+                new DocumentChangedEvent(DocumentChangedType.create, "123", "my-profile", 12345l);
+        snsEventEmitter.sendEvent(documentChangedEvent);
+
+        verify(amazonSnsMock, never()).publish(any(PublishRequest.class));
+
     }
 
 }

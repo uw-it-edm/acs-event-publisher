@@ -26,6 +26,7 @@ public class SNSEventEmitterImpl implements EventEmitter {
     private SNSClientFactory snsClientFactory;
 
     private final String snsTopicARN;
+    private boolean noop;
 
 
     private AmazonSNS snsClient;
@@ -34,30 +35,33 @@ public class SNSEventEmitterImpl implements EventEmitter {
     private ObjectMapper objectMapper = new ObjectMapper();
 
 
-    public SNSEventEmitterImpl(SNSClientFactory snsClientFactory, String snsTopicARN) {
+    public SNSEventEmitterImpl(SNSClientFactory snsClientFactory, String snsTopicARN, boolean noop) {
         this.snsClientFactory = snsClientFactory;
         this.snsTopicARN = snsTopicARN;
+        this.noop = noop;
     }
 
 
     @Override
     public void sendEvent(DocumentChangedEvent event) {
 
-
         try {
-            PublishRequest publishRequest = new PublishRequest(snsTopicARN, objectMapper.writeValueAsString(event));
-            publishRequest.addMessageAttributesEntry(SNS_PROPERTY_PROFILE, new MessageAttributeValue().withDataType(SNS_DATATYPE_STRING).withStringValue(event.getProfile()));
-            publishRequest.addMessageAttributesEntry(SNS_PROPERTY_EVENT_TYPE, new MessageAttributeValue().withDataType(SNS_DATATYPE_STRING).withStringValue(event.getType().name()));
+            if (this.noop) {
+                logger.info("NOOP --- Sending {} ", objectMapper.writeValueAsString(event));
+            } else {
 
-            PublishResult publishResult = getSnsClient().publish(publishRequest);
+                PublishRequest publishRequest = new PublishRequest(snsTopicARN, objectMapper.writeValueAsString(event));
+                publishRequest.addMessageAttributesEntry(SNS_PROPERTY_PROFILE, new MessageAttributeValue().withDataType(SNS_DATATYPE_STRING).withStringValue(event.getProfile()));
+                publishRequest.addMessageAttributesEntry(SNS_PROPERTY_EVENT_TYPE, new MessageAttributeValue().withDataType(SNS_DATATYPE_STRING).withStringValue(event.getType().name()));
 
-            logger.debug("document event sent : {} for {}, messageId : {}", event.getType().name(), event.getDocumentId(), publishResult.getMessageId());
+                PublishResult publishResult = getSnsClient().publish(publishRequest);
+
+                logger.debug("document event sent : {} for {}, messageId : {}", event.getType().name(), event.getDocumentId(), publishResult.getMessageId());
+            }
         } catch (Exception e) {
             logger.error("error while publishing event for " + event.getDocumentId(), e);
             resetSNSClient();
         }
-
-
     }
 
     private synchronized void resetSNSClient() {

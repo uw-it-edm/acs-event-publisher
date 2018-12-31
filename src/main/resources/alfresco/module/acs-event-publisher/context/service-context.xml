@@ -39,6 +39,7 @@
         <constructor-arg name="snsClientFactory"
                          ref="edu.uw.edm.eventpublisher.sns.SNSClientFactory"/>
         <constructor-arg name="snsTopicARN" value="${edm.eventpublisher.snsTopicARN}"/>
+        <constructor-arg name="noop" type="boolean" value="${edm.eventpublisher.noop:false}"/>
     </bean>
     <bean id="edu.uw.edm.eventpublisher.EventPublisherComponent"
           class="edu.uw.edm.eventpublisher.EventPublisherComponent"
