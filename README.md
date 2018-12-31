@@ -2,7 +2,7 @@
 
 This is the list of allowed properties and their default values : 
 
-    # disable subscription to ACS events
+    # Enable subscription to ACS events ( Enable the component ) 
     edm.eventpublisher.enabled=true
     # allow the component to subscribe to ACS events without emitting sns events
     edm.eventpublisher.noop=false  
