@@ -131,7 +131,7 @@ public class EventPublisherComponent {
                 String profile = getProfileFromPath(docNodeRef);
 
                 Date modifiedAt = (Date) serviceRegistry.getNodeService().getProperty(docNodeRef, ContentModel.PROP_MODIFIED);
-                eventEmitter.sendEvent(new DocumentChangedEvent(DocumentChangedType.create, docNodeRef.getId(), profile, modifiedAt.getTime()));
+                eventEmitter.sendEvent(new DocumentChangedEvent(DocumentChangedType.update, docNodeRef.getId(), profile, modifiedAt.getTime()));
 
                 logger.info("onUpdateDocument: A document with ref ({}) was just updated in folder ({})",
                         docNodeRef, parentFolderRef);
