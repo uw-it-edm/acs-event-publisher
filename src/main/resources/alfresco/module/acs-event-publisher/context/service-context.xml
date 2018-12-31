@@ -47,6 +47,7 @@
         <constructor-arg ref="policyComponent"/>
         <constructor-arg ref="ServiceRegistry"/>
         <constructor-arg ref="edu.uw.edm.eventpublisher.sns.SNSEventEmitterImpl"/>
+        <constructor-arg name="enabled" type="boolean" value="${edm.eventpublisher.enabled:true}"/>
     </bean>
 
 
