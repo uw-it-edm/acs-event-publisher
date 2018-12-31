@@ -1,3 +1,16 @@
+# Configure components :
+
+This is the list of allowed properties and their default values : 
+
+    # disable subscription to ACS events
+    edm.eventpublisher.enabled=true
+    # allow the component to subscribe to ACS events without emitting sns events
+    edm.eventpublisher.noop=false  
+    edm.eventpublisher.aws_region=
+    edm.eventpublisher.aws_accessKeyId=
+    edm.eventpublisher.aws_secretAccessKey=
+    edm.eventpublisher.snsTopicARN=
+
 
 #  Configure access to Alfresco Private Repository
   * Create a maven master password, then encrypt the artifacts.alfresco.com password : https://maven.apache.org/guides/mini/guide-encryption.html
