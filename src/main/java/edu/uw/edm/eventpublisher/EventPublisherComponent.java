@@ -25,6 +25,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.namespace.QName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,19 +46,22 @@ import edu.uw.edm.eventpublisher.sns.model.DocumentChangedType;
 public class EventPublisherComponent {
 
 
+    static final QName UW_CONTENT = QName.createQName("http://www.uw.edu/model/content/1.0", "content");
+
     private static Pattern SITE_FINDER_REGEX = Pattern.compile("^/\\{.*\\}company_home/\\{.*\\}sites\\/\\{.*\\}(\\w+)/\\{.*\\}documentLibrary");
-    ;
 
     private static Logger logger = LoggerFactory.getLogger(EventPublisherComponent.class);
 
     private PolicyComponent eventManager;
     private ServiceRegistry serviceRegistry;
     private EventEmitter eventEmitter;
+    private boolean enabled;
 
-    public EventPublisherComponent(PolicyComponent eventManager, ServiceRegistry serviceRegistry, EventEmitter eventEmitter) {
+    public EventPublisherComponent(PolicyComponent eventManager, ServiceRegistry serviceRegistry, EventEmitter eventEmitter, boolean enabled) {
         this.eventManager = eventManager;
         this.serviceRegistry = serviceRegistry;
         this.eventEmitter = eventEmitter;
+        this.enabled = enabled;
     }
 
     public void setServiceRegistry(ServiceRegistry serviceRegistry) {
@@ -69,23 +73,25 @@ public class EventPublisherComponent {
     }
 
     public void registerEventHandlers() {
-        eventManager.bindClassBehaviour(
-                NodeServicePolicies.OnCreateNodePolicy.QNAME,
-                ContentModel.TYPE_CONTENT,
-                new JavaBehaviour(this, "onAddDocument",
-                        Behaviour.NotificationFrequency.TRANSACTION_COMMIT));
+        if (enabled) {
+            eventManager.bindClassBehaviour(
+                    NodeServicePolicies.OnCreateNodePolicy.QNAME,
+                    UW_CONTENT,
+                    new JavaBehaviour(this, "onAddDocument",
+                            Behaviour.NotificationFrequency.TRANSACTION_COMMIT));
 
-        eventManager.bindClassBehaviour(
-                NodeServicePolicies.OnUpdateNodePolicy.QNAME,
-                ContentModel.TYPE_CONTENT,
-                new JavaBehaviour(this, "onUpdateDocument",
-                        Behaviour.NotificationFrequency.TRANSACTION_COMMIT));
+            eventManager.bindClassBehaviour(
+                    NodeServicePolicies.OnUpdateNodePolicy.QNAME,
+                    UW_CONTENT,
+                    new JavaBehaviour(this, "onUpdateDocument",
+                            Behaviour.NotificationFrequency.TRANSACTION_COMMIT));
 
-        eventManager.bindClassBehaviour(
-                NodeServicePolicies.OnDeleteNodePolicy.QNAME,
-                ContentModel.TYPE_CONTENT,
-                new JavaBehaviour(this, "onDeleteDocument",
-                        Behaviour.NotificationFrequency.TRANSACTION_COMMIT));
+            eventManager.bindClassBehaviour(
+                    NodeServicePolicies.OnDeleteNodePolicy.QNAME,
+                    ContentModel.TYPE_CONTENT,
+                    new JavaBehaviour(this, "onDeleteDocument",
+                            Behaviour.NotificationFrequency.TRANSACTION_COMMIT));
+        }
     }
 
     public void onAddDocument(ChildAssociationRef parentChildAssocRef) {

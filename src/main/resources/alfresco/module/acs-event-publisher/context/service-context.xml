@@ -39,6 +39,7 @@
         <constructor-arg name="snsClientFactory"
                          ref="edu.uw.edm.eventpublisher.sns.SNSClientFactory"/>
         <constructor-arg name="snsTopicARN" value="${edm.eventpublisher.snsTopicARN}"/>
+        <constructor-arg name="noop" type="boolean" value="${edm.eventpublisher.noop:false}"/>
     </bean>
     <bean id="edu.uw.edm.eventpublisher.EventPublisherComponent"
           class="edu.uw.edm.eventpublisher.EventPublisherComponent"
@@ -47,6 +48,7 @@
         <constructor-arg ref="policyComponent"/>
         <constructor-arg ref="ServiceRegistry"/>
         <constructor-arg ref="edu.uw.edm.eventpublisher.sns.SNSEventEmitterImpl"/>
+        <constructor-arg name="enabled" type="boolean" value="${edm.eventpublisher.enabled:true}"/>
     </bean>
 
 
