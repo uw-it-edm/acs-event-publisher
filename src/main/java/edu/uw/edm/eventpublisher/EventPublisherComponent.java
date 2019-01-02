@@ -74,6 +74,7 @@ public class EventPublisherComponent {
 
     public void registerEventHandlers() {
         if (enabled) {
+            logger.info("Initializing acs-event-publisher");
             eventManager.bindClassBehaviour(
                     NodeServicePolicies.OnCreateNodePolicy.QNAME,
                     UW_CONTENT,
@@ -88,9 +89,11 @@ public class EventPublisherComponent {
 
             eventManager.bindClassBehaviour(
                     NodeServicePolicies.OnDeleteNodePolicy.QNAME,
-                    ContentModel.TYPE_CONTENT,
+                    UW_CONTENT,
                     new JavaBehaviour(this, "onDeleteDocument",
                             Behaviour.NotificationFrequency.TRANSACTION_COMMIT));
+        } else {
+            logger.error("acs-event-publisher is disabled");
         }
     }
 
@@ -103,14 +106,13 @@ public class EventPublisherComponent {
             if (docRef == null || !serviceRegistry.getNodeService().exists(docRef)) {
                 // Does not exist, nothing to do
                 logger.warn("onAddDocument: A new document was added but removed in same transaction");
-                return;
             } else {
 
                 String profile = getProfileFromPath(docRef);
 
                 Date modifiedAt = (Date) serviceRegistry.getNodeService().getProperty(docRef, ContentModel.PROP_MODIFIED);
                 eventEmitter.sendEvent(new DocumentChangedEvent(DocumentChangedType.create, docRef.getId(), profile, modifiedAt.getTime()));
-                logger.info("onAddDocument: A new document with ref ({}) was just created in folder ({})",
+                logger.debug("onAddDocument: A new document with ref ({}) was just created in folder ({})",
                         docRef, parentFolderRef);
             }
         } catch (Exception e) {
@@ -133,7 +135,7 @@ public class EventPublisherComponent {
                 Date modifiedAt = (Date) serviceRegistry.getNodeService().getProperty(docNodeRef, ContentModel.PROP_MODIFIED);
                 eventEmitter.sendEvent(new DocumentChangedEvent(DocumentChangedType.update, docNodeRef.getId(), profile, modifiedAt.getTime()));
 
-                logger.info("onUpdateDocument: A document with ref ({}) was just updated in folder ({})",
+                logger.debug("onUpdateDocument: A document with ref ({}) was just updated in folder ({})",
                         docNodeRef, parentFolderRef);
             }
         } catch (Exception e) {
@@ -149,7 +151,7 @@ public class EventPublisherComponent {
 
             eventEmitter.sendEvent(new DocumentChangedEvent(DocumentChangedType.delete, docRef.getId(), profile, new Date().getTime()));
 
-            logger.info("onDeleteDocument: A document with ref ({}) was just deleted in folder ({})",
+            logger.debug("onDeleteDocument: A document with ref ({}) was just deleted in folder ({})",
                     docRef, parentFolderRef);
         } catch (Exception e) {
             logger.error("failed to execute 'onDeleteDocument'for " + parentChildAssocRef, e);
