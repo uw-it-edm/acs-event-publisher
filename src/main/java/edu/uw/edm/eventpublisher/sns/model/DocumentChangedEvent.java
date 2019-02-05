@@ -8,12 +8,14 @@ public class DocumentChangedEvent {
     private final String documentId;
     private final String profile;
     private final long lastModifiedDate;
+    private final String wccId;
 
-    public DocumentChangedEvent(DocumentChangedType type, String documentId, String profile, long lastModifiedDate) {
+    public DocumentChangedEvent(DocumentChangedType type, String documentId, String profile, long lastModifiedDate, String wccId) {
         this.type = type;
         this.documentId = documentId;
         this.profile = profile;
         this.lastModifiedDate = lastModifiedDate;
+        this.wccId = wccId;
     }
 
 
@@ -31,5 +33,9 @@ public class DocumentChangedEvent {
 
     public long getLastModifiedDate() {
         return lastModifiedDate;
+    }
+
+    public String getWccId() {
+        return wccId;
     }
 }

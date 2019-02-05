@@ -25,6 +25,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.namespace.QName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,8 @@ import java.util.regex.Pattern;
 
 import edu.uw.edm.eventpublisher.sns.model.DocumentChangedEvent;
 import edu.uw.edm.eventpublisher.sns.model.DocumentChangedType;
+
+import java.io.Serializable;
 
 /**
  * A basic component that will be started for this module. Uses the NodeLocatorService to easily
@@ -47,6 +50,7 @@ public class EventPublisherComponent {
 
 
     static final QName UW_CONTENT = QName.createQName("http://www.uw.edu/model/content/1.0", "content");
+    static final QName UW_WCCID = QName.createQName("http://www.uw.edu/model/content/1.0", "wccId");
 
     private static Pattern SITE_FINDER_REGEX = Pattern.compile("^/\\{.*\\}company_home/\\{.*\\}sites\\/\\{.*\\}(\\w+)/\\{.*\\}documentLibrary");
 
@@ -106,12 +110,15 @@ public class EventPublisherComponent {
             if (docRef == null || !serviceRegistry.getNodeService().exists(docRef)) {
                 // Does not exist, nothing to do
                 logger.warn("onAddDocument: A new document was added but removed in same transaction");
+            } else if (isCheckedOutOrWorkingCopy(docRef)) {
+                return;
             } else {
 
                 String profile = getProfileFromPath(docRef);
+                String wccId = getWccId(docRef);
 
                 Date modifiedAt = (Date) serviceRegistry.getNodeService().getProperty(docRef, ContentModel.PROP_MODIFIED);
-                eventEmitter.sendEvent(new DocumentChangedEvent(DocumentChangedType.create, docRef.getId(), profile, modifiedAt.getTime()));
+                eventEmitter.sendEvent(new DocumentChangedEvent(DocumentChangedType.create, docRef.getId(), profile, modifiedAt.getTime(), wccId));
                 logger.debug("onAddDocument: A new document with ref ({}) was just created in folder ({})",
                         docRef, parentFolderRef);
             }
@@ -128,12 +135,15 @@ public class EventPublisherComponent {
                 // Does not exist, nothing to do
                 logger.warn("onUpdateDocument: A document was updated but removed in same transaction");
                 return;
+            } else if (isCheckedOutOrWorkingCopy(docNodeRef)) {
+                return;
             } else {
                 NodeRef parentFolderRef = serviceRegistry.getNodeService().getPrimaryParent(docNodeRef).getParentRef();
                 String profile = getProfileFromPath(docNodeRef);
+                String wccId = getWccId(docNodeRef);
 
                 Date modifiedAt = (Date) serviceRegistry.getNodeService().getProperty(docNodeRef, ContentModel.PROP_MODIFIED);
-                eventEmitter.sendEvent(new DocumentChangedEvent(DocumentChangedType.update, docNodeRef.getId(), profile, modifiedAt.getTime()));
+                eventEmitter.sendEvent(new DocumentChangedEvent(DocumentChangedType.update, docNodeRef.getId(), profile, modifiedAt.getTime(), wccId));
 
                 logger.debug("onUpdateDocument: A document with ref ({}) was just updated in folder ({})",
                         docNodeRef, parentFolderRef);
@@ -147,9 +157,11 @@ public class EventPublisherComponent {
         try {
             NodeRef parentFolderRef = parentChildAssocRef.getParentRef();
             NodeRef docRef = parentChildAssocRef.getChildRef();
-            String profile = getProfileFromPath(parentFolderRef);
 
-            eventEmitter.sendEvent(new DocumentChangedEvent(DocumentChangedType.delete, docRef.getId(), profile, new Date().getTime()));
+            String profile = getProfileFromPath(parentFolderRef);
+            String wccId = getWccId(docRef);
+
+            eventEmitter.sendEvent(new DocumentChangedEvent(DocumentChangedType.delete, docRef.getId(), profile, new Date().getTime(), wccId));
 
             logger.debug("onDeleteDocument: A document with ref ({}) was just deleted in folder ({})",
                     docRef, parentFolderRef);
@@ -166,6 +178,21 @@ public class EventPublisherComponent {
             return matcher.group(1);
         }
         throw new RuntimeException("Cannot find site for " + path.toString());
+    }
+
+    private String getWccId(NodeRef docRef) {
+        Serializable wccId = serviceRegistry.getNodeService().getProperty(docRef, UW_WCCID);
+        return wccId == null ? null : wccId.toString();
+    }
+
+    private boolean isCheckedOutOrWorkingCopy(NodeRef docRef) {
+        CheckOutCheckInService checkOutCheckInService = serviceRegistry.getCheckOutCheckInService();
+        if (checkOutCheckInService.isCheckedOut(docRef) || checkOutCheckInService.isWorkingCopy(docRef) ) {
+            logger.debug("isCheckedOutOrWorkingCopy: node {} is checked out or is a working copy", docRef.getId()); 
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public void setEventEmitter(EventEmitter eventEmitter) {
