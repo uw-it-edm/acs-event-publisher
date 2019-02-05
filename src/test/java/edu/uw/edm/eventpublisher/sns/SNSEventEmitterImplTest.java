@@ -54,7 +54,7 @@ public class SNSEventEmitterImplTest {
         when(amazonSnsMock.publish(any(PublishRequest.class))).thenReturn(mockPublishResult);
 
         DocumentChangedEvent documentChangedEvent =
-                new DocumentChangedEvent(DocumentChangedType.create, "123", "my-profile", 12345l);
+                new DocumentChangedEvent(DocumentChangedType.create, "123", "my-profile", 12345l, "wccId-1");
         snsEventEmitter.sendEvent(documentChangedEvent);
 
         snsEventEmitter.sendEvent(documentChangedEvent);
@@ -67,7 +67,7 @@ public class SNSEventEmitterImplTest {
         when(amazonSnsMock.publish(any(PublishRequest.class))).thenThrow(new AmazonClientException("bla"));
 
         DocumentChangedEvent documentChangedEvent =
-                new DocumentChangedEvent(DocumentChangedType.create, "123", "my-profile", 12345l);
+                new DocumentChangedEvent(DocumentChangedType.create, "123", "my-profile", 12345l, "wccId-1");
         snsEventEmitter.sendEvent(documentChangedEvent);
 
         snsEventEmitter.sendEvent(documentChangedEvent);
@@ -83,7 +83,7 @@ public class SNSEventEmitterImplTest {
         when(amazonSnsMock.publish(any(PublishRequest.class))).thenReturn(mockPublishResult);
 
         DocumentChangedEvent documentChangedEvent =
-                new DocumentChangedEvent(DocumentChangedType.create, "123", "my-profile", 12345l);
+                new DocumentChangedEvent(DocumentChangedType.create, "123", "my-profile", 12345l, "wccId-1");
         snsEventEmitter.sendEvent(documentChangedEvent);
 
         ArgumentCaptor<PublishRequest> argumentCaptor = ArgumentCaptor.forClass(PublishRequest.class);
@@ -94,6 +94,7 @@ public class SNSEventEmitterImplTest {
 
         assertThat(capturePublishRequest.getMessageAttributes().get("profile").getStringValue(), is(equalTo("my-profile")));
         assertThat(capturePublishRequest.getMessageAttributes().get("event-type").getStringValue(), is(equalTo("create")));
+        assertThat(capturePublishRequest.getMessageAttributes().get("wccId").getStringValue(), is(equalTo("wccId-1")));
     }
 
     @Test
@@ -106,7 +107,7 @@ public class SNSEventEmitterImplTest {
         when(amazonSnsMock.publish(any(PublishRequest.class))).thenReturn(mockPublishResult);
 
         DocumentChangedEvent documentChangedEvent =
-                new DocumentChangedEvent(DocumentChangedType.create, "123", "my-profile", 12345l);
+                new DocumentChangedEvent(DocumentChangedType.create, "123", "my-profile", 12345l, "wccId-1");
         snsEventEmitter.sendEvent(documentChangedEvent);
 
         verify(amazonSnsMock, never()).publish(any(PublishRequest.class));

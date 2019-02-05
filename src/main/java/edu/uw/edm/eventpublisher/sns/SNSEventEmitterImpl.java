@@ -9,6 +9,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.apache.commons.lang3.StringUtils;
+
 import edu.uw.edm.eventpublisher.EventEmitter;
 import edu.uw.edm.eventpublisher.sns.model.DocumentChangedEvent;
 
@@ -19,6 +21,7 @@ public class SNSEventEmitterImpl implements EventEmitter {
 
     public static final String SNS_PROPERTY_PROFILE = "profile";
     public static final String SNS_PROPERTY_EVENT_TYPE = "event-type";
+    public static final String SNS_PROPERTY_WCCID = "wccId";
     public static final String SNS_DATATYPE_STRING = "String";
 
     private static Logger logger = LoggerFactory.getLogger(SNSEventEmitterImpl.class);
@@ -46,13 +49,13 @@ public class SNSEventEmitterImpl implements EventEmitter {
     public void sendEvent(DocumentChangedEvent event) {
 
         try {
-            if (this.noop) {
+            if (this.noop || StringUtils.isBlank(event.getWccId())) {
                 logger.info("NOOP --- Sending {} ", objectMapper.writeValueAsString(event));
             } else {
-
                 PublishRequest publishRequest = new PublishRequest(snsTopicARN, objectMapper.writeValueAsString(event));
                 publishRequest.addMessageAttributesEntry(SNS_PROPERTY_PROFILE, new MessageAttributeValue().withDataType(SNS_DATATYPE_STRING).withStringValue(event.getProfile()));
                 publishRequest.addMessageAttributesEntry(SNS_PROPERTY_EVENT_TYPE, new MessageAttributeValue().withDataType(SNS_DATATYPE_STRING).withStringValue(event.getType().name()));
+                publishRequest.addMessageAttributesEntry(SNS_PROPERTY_WCCID, new MessageAttributeValue().withDataType(SNS_DATATYPE_STRING).withStringValue(event.getWccId()));
 
                 PublishResult publishResult = getSnsClient().publish(publishRequest);
 
