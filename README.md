@@ -18,7 +18,24 @@ This is the list of allowed properties and their default values :
 
 
 
+# Create release 
 
+Travis will create a new GitHub release when a new tag is detected.
+To create new tag, run these commands on your local machine : 
+
+    git flow release start x.x.x
+    mvn versions:set -DnewVersion=x.x.x -DgenerateBackupPoms=false
+    git add pom.xml
+    git commit -m "Bump version"
+    git flow feature finish 
+    git push origin master develop
+    
+Once this is done, prepare develop for the next devolpment cycle by updating the pom to use a `SNAPSHOT` version
+
+    mvn versions:set -DnewVersion=x.x.x-SNAPSHOT -DgenerateBackupPoms=false
+    git add pom.xml
+    git commit -m  "Prepare for next development cycle"
+    git push origin develop 
 
 
 
