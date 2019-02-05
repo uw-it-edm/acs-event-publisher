@@ -27,7 +27,7 @@ To create new tag, run these commands on your local machine :
     mvn versions:set -DnewVersion=x.x.x -DgenerateBackupPoms=false
     git add pom.xml
     git commit -m "Bump version"
-    git flow feature finish 
+    git flow release finish 
     git push origin master develop
     
 Once this is done, prepare develop for the next devolpment cycle by updating the pom to use a `SNAPSHOT` version
