@@ -159,7 +159,7 @@ public class EventPublisherComponent {
             NodeRef docRef = parentChildAssocRef.getChildRef();
 
             String profile = getProfileFromPath(parentFolderRef);
-            String wccId = getWccId(docRef);
+            String wccId = null; //  getWccId(docRef) from a deleted node thhrows InvaidNodeException
 
             eventEmitter.sendEvent(new DocumentChangedEvent(DocumentChangedType.delete, docRef.getId(), profile, new Date().getTime(), wccId));
 

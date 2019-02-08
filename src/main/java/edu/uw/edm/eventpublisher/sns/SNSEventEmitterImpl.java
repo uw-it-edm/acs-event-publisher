@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import edu.uw.edm.eventpublisher.EventEmitter;
 import edu.uw.edm.eventpublisher.sns.model.DocumentChangedEvent;
+import edu.uw.edm.eventpublisher.sns.model.DocumentChangedType;
 
 /**
  * @author Maxime Deravet Date: 8/23/18
@@ -49,13 +50,16 @@ public class SNSEventEmitterImpl implements EventEmitter {
     public void sendEvent(DocumentChangedEvent event) {
 
         try {
-            if (this.noop || StringUtils.isBlank(event.getWccId())) {
-                logger.info("NOOP --- Sending {} ", objectMapper.writeValueAsString(event));
+            if (this.noop || (event.getType() != DocumentChangedType.delete && StringUtils.isBlank(event.getWccId()))) {
+                logger.debug("NOOP --- Sending {} ", objectMapper.writeValueAsString(event));
             } else {
                 PublishRequest publishRequest = new PublishRequest(snsTopicARN, objectMapper.writeValueAsString(event));
                 publishRequest.addMessageAttributesEntry(SNS_PROPERTY_PROFILE, new MessageAttributeValue().withDataType(SNS_DATATYPE_STRING).withStringValue(event.getProfile()));
                 publishRequest.addMessageAttributesEntry(SNS_PROPERTY_EVENT_TYPE, new MessageAttributeValue().withDataType(SNS_DATATYPE_STRING).withStringValue(event.getType().name()));
-                publishRequest.addMessageAttributesEntry(SNS_PROPERTY_WCCID, new MessageAttributeValue().withDataType(SNS_DATATYPE_STRING).withStringValue(event.getWccId()));
+
+                if ( StringUtils.isNotBlank(event.getWccId() )) {
+                    publishRequest.addMessageAttributesEntry(SNS_PROPERTY_WCCID, new MessageAttributeValue().withDataType(SNS_DATATYPE_STRING).withStringValue(event.getWccId()));
+                }
 
                 PublishResult publishResult = getSnsClient().publish(publishRequest);
 
