@@ -1,3 +1,5 @@
+# DEPRECATED - This project is deprecated and no longer maintained
+
 # Configure components :
 
 This is the list of allowed properties and their default values : 
